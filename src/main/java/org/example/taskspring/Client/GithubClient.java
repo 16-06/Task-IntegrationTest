@@ -1,44 +1,39 @@
 package org.example.taskspring.Client;
 
+import lombok.RequiredArgsConstructor;
 import org.example.taskspring.DTO.GithubBranchResponse;
 import org.example.taskspring.DTO.GithubRepoDto;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.client.RestClient;
 
 import java.util.*;
 
 @Component
+@RequiredArgsConstructor
 public class GithubClient {
 
-    private final RestTemplate restTemplate;
-    private final String baseUrl;
+    private final RestClient restClient;
 
-    public GithubClient(RestTemplate restTemplate, @Value("${github.api.base-url}") String baseUrl) {
-        this.restTemplate = restTemplate;
-        this.baseUrl = baseUrl;
-    }
+    @Value("${github.api.base-url}")
+    private String baseUrl;
+
 
     public List<GithubRepoDto> getRepos(String username) {
 
-        String url = baseUrl + "/users/" + username + "/repos";
-
-        ResponseEntity<GithubRepoDto[]> response = restTemplate.getForEntity(url, GithubRepoDto[].class);
-
-        return Optional.ofNullable(response.getBody())
-                .map(Arrays::asList)
-                .orElse(Collections.emptyList());
+        return List.of(restClient
+                .get()
+                .uri(baseUrl + "/users/{username}/repos", username)
+                .retrieve()
+                .body(GithubRepoDto[].class));
     }
 
     public List<GithubBranchResponse> getBranches(String username, String repoName) {
 
-        String url = baseUrl + "/repos/" + username + "/" + repoName + "/branches";
-
-        ResponseEntity<GithubBranchResponse[]> response = restTemplate.getForEntity(url, GithubBranchResponse[].class);
-
-        return Optional.ofNullable(response.getBody())
-                .map(Arrays::asList)
-                .orElse(Collections.emptyList());
+        return List.of(restClient
+                .get()
+                .uri(baseUrl + "/repos/{username}/{repo}/branches", username, repoName)
+                .retrieve()
+                .body(GithubBranchResponse[].class));
     }
 }

@@ -19,13 +19,13 @@ public class GithubService {
         List<GithubRepoDto> repos = githubClient.getRepos(username);
 
         return repos.stream()
-                .filter(repo -> !repo.isFork())
+                .filter(repo -> !repo.fork())
                 .map(repo -> {
-                    List<BranchDto> branches = githubClient.getBranches(username, repo.getName())
+                    List<BranchDto> branches = githubClient.getBranches(username, repo.name())
                             .stream()
-                            .map(branch -> new BranchDto(branch.getName(), branch.getCommit().getSha()))
+                            .map(branch -> new BranchDto(branch.name(), branch.commit().sha()))
                             .toList();
-                            return new GithubRepoDto(repo.getName(), repo.getOwner().getLogin(), branches);
+                            return new GithubRepoDto(repo.name(), repo.owner().login(), branches);
                 })
                 .toList();
 
